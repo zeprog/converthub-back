@@ -1,6 +1,6 @@
 from typing import Union
 from fastapi import FastAPI, File, UploadFile
-from routes import send_photo
+from app.routes import send_photo
 import logging
 
 logging.basicConfig(level=logging.INFO)

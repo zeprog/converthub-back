@@ -2,12 +2,11 @@ from typing import Union
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import StreamingResponse
 from PIL import Image
-from controllers import convert_png_to_webp
+from app.controllers import convert_png_to_webp
 import io
 import logging
 
 logging.basicConfig(level=logging.INFO)
-app = FastAPI()
 
 async def send_photo(from_image_type: str, to_image_type: str, file: UploadFile = File(...)):
   try:
