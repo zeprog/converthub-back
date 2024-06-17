@@ -1,10 +1,7 @@
 from PIL import Image, ImageDraw
-import svgwrite
 import aspose.words as aw
 import io
 import xml.etree.ElementTree as ET
-import webcolors
-
 from app.utils import hex_to_rgb, name_to_rgb
 
 def convert_image(input_image: Image.Image, to_format: str, output_buffer: io.BytesIO):
