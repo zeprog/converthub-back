@@ -1,8 +1,6 @@
-from PIL import Image, ImageDraw
+from PIL import Image
 import aspose.words as aw
 import io
-import xml.etree.ElementTree as ET
-from app.utils import hex_to_rgb, name_to_rgb
 
 def convert_image(input_image: Image.Image, to_format: str, output_buffer: io.BytesIO):
   converters = {
@@ -42,53 +40,38 @@ def convert_to_svg(input_image: Image.Image, output_buffer: io.BytesIO):
     save_options = aw.saving.ImageSaveOptions(aw.SaveFormat.SVG)
     doc.save(output_buffer, save_options)
 
-# НАДО ДОРАБОТАТЬ
-def convert_svg_to_image(svg_data: bytes, to_format: str, output_buffer: io.BytesIO):
-  # Парсинг SVG данных
-  root = ET.fromstring(svg_data.decode('utf-8'))
-  
-  # Извлечение размеров изображения
-  width = int(root.attrib.get('width', '100').replace('px', ''))
-  height = int(root.attrib.get('height', '100').replace('px', ''))
+def convert_svg_to_image(svg_data: bytes, to_format: str, output_buffer: io.BytesIO, webp_quality: int = 80):
+  with io.BytesIO() as temp_svg:
+    temp_svg.write(svg_data)
+    temp_svg.seek(0)
 
-  # Создание изображения с прозрачным фоном
-  image = Image.new("RGBA", (width, height), (255, 255, 255, 0))
-  draw = ImageDraw.Draw(image)
+    doc = aw.Document()
+    builder = aw.DocumentBuilder(doc)
+    shape = builder.insert_image(temp_svg)
+    
+    # Настройка размеров страницы и полей
+    pageSetup = builder.page_setup
+    pageSetup.page_width = shape.width
+    pageSetup.page_height = shape.height
+    pageSetup.top_margin = 0
+    pageSetup.left_margin = 0
+    pageSetup.bottom_margin = 0
+    pageSetup.right_margin = 0
+    
+    if to_format == 'webp':
+      temp_png = io.BytesIO()
+      doc.save(temp_png, aw.SaveFormat.PNG)
+      temp_png.seek(0)
+      input_image = Image.open(temp_png)
+      convert_to_webp(input_image, output_buffer)
+    else:
+      if to_format == 'png':
+        save_format = aw.SaveFormat.PNG
+      elif to_format == 'jpeg':
+        save_format = aw.SaveFormat.JPEG
+      else:
+        raise ValueError(f"Unsupported format: {to_format}")
 
-  # Рендеринг SVG элементов (ограниченный рендеринг, базовая реализация)
-  for element in root:
-    tag = element.tag.split('}')[-1]  # Учитываем пространство имен
-    if tag == 'circle':
-      cx = int(element.attrib.get('cx', 0))
-      cy = int(element.attrib.get('cy', 0))
-      r = int(element.attrib.get('r', 0))
-      fill = element.attrib.get('fill', '#000000')
-      try:
-        fill = hex_to_rgb(fill) + (255,)
-      except ValueError:
-        fill = name_to_rgb(fill) + (255,)
-      draw.ellipse((cx-r, cy-r, cx+r, cy+r), fill=fill)
-    elif tag == 'rect':
-      x = int(element.attrib.get('x', 0))
-      y = int(element.attrib.get('y', 0))
-      width = int(element.attrib.get('width', 0))
-      height = int(element.attrib.get('height', 0))
-      fill = element.attrib.get('fill', '#000000')
-      try:
-        fill = hex_to_rgb(fill) + (255,)
-      except ValueError:
-        fill = name_to_rgb(fill) + (255,)
-      draw.rectangle((x, y, x+width, y+height), fill=fill)
-    # Добавьте больше условий для обработки других элементов SVG
-  
-  # Конвертация изображения в нужный формат
-  if to_format == "png":
-    image.save(output_buffer, format="PNG")
-  elif to_format == "jpeg":
-    image.convert("RGB").save(output_buffer, format="JPEG")
-  elif to_format == "webp":
-    image.save(output_buffer, format="WEBP")
-  else:
-    raise ValueError(f"Unsupported format: {to_format}")
+      doc.save(output_buffer, save_format)
 
-  output_buffer.seek(0)
+    output_buffer.seek(0)
