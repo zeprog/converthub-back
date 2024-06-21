@@ -14,7 +14,7 @@ def png_image():
   buf.seek(0)
   return buf
 
-@pytest.mark.parametrize("from_format,to_format", [("png", "webp"), ("jpeg", "webp"), ("png", "jpeg"), ("png", "svg"), ("svg", "png"), ("svg", "jpeg"), ("svg", "webp")])
+@pytest.mark.parametrize("from_format,to_format", [("png", "webp"), ("jpeg", "webp"), ("jpg", "webp"), ("png", "jpeg"), ("png", "svg"), ("svg", "png"), ("svg", "jpeg"), ("svg", "webp")])
 def test_supported_formats(png_image, from_format, to_format):
   if from_format == "jpeg":
     img = Image.new('RGB', (100, 100), color=(155, 0, 0))

@@ -7,7 +7,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-SUPPORTED_FORMATS = {"png", "jpeg", "webp", "svg"}
+SUPPORTED_FORMATS = {"png", "jpeg", "jpg", "webp", "svg"}
 
 async def send_photo(from_image_type: str, to_image_type: str, file: UploadFile):
   if from_image_type not in SUPPORTED_FORMATS or to_image_type not in SUPPORTED_FORMATS:

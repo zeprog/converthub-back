@@ -40,7 +40,7 @@ def convert_to_svg(input_image: Image.Image, output_buffer: io.BytesIO):
     save_options = aw.saving.ImageSaveOptions(aw.SaveFormat.SVG)
     doc.save(output_buffer, save_options)
 
-def convert_svg_to_image(svg_data: bytes, to_format: str, output_buffer: io.BytesIO, webp_quality: int = 80):
+def convert_svg_to_image(svg_data: bytes, to_format: str, output_buffer: io.BytesIO):
   with io.BytesIO() as temp_svg:
     temp_svg.write(svg_data)
     temp_svg.seek(0)
@@ -67,7 +67,7 @@ def convert_svg_to_image(svg_data: bytes, to_format: str, output_buffer: io.Byte
     else:
       if to_format == 'png':
         save_format = aw.SaveFormat.PNG
-      elif to_format == 'jpeg':
+      elif to_format == 'jpeg' or to_format == 'jpg':
         save_format = aw.SaveFormat.JPEG
       else:
         raise ValueError(f"Unsupported format: {to_format}")
